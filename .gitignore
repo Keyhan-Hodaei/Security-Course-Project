@@ -1,0 +1,23 @@
+.pytest_cache/
+__pycache__/
+*.pyc
+# مخزن‌های هدف به‌صورت targets/*/repo.bundle ردیابی می‌شوند (scripts/setup_targets.sh)
+targets/*/repo/
+# core dump و باینری‌های ساخته‌شده هرگز وارد مخزن نشوند
+core
+core.*
+targets/*/repo/jsoncheck
+targets/*/repo/imginfo
+
+# Generated artifacts and project documentation
+/reports/
+/bundles/
+/defense/results/
+/docs/
+/README.md
+/CONTRIBUTORS.md
+*.md
+*.pdf
+*.docx
+report.json
+summary.json
