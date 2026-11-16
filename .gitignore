@@ -1,0 +1,23 @@
+.pytest_cache/
+__pycache__/
+*.pyc
+# Target repositories are tracked as targets/*/repo.bundle (scripts/setup_targets.sh)
+targets/*/repo/
+# Never track core dumps or compiled binaries
+core
+core.*
+targets/*/repo/jsoncheck
+targets/*/repo/imginfo
+
+# Generated artifacts and project documentation
+/reports/
+/bundles/
+/defense/results/
+/docs/
+/README.md
+/CONTRIBUTORS.md
+*.md
+*.pdf
+*.docx
+report.json
+summary.json
