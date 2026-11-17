@@ -1,0 +1,78 @@
+{
+  "valid": [
+    {
+      "name": "valid_small.jpg",
+      "w": 64,
+      "h": 48,
+      "c": 3
+    },
+    {
+      "name": "valid_big.jpg",
+      "w": 1200,
+      "h": 800,
+      "c": 3
+    },
+    {
+      "name": "valid_png.png",
+      "w": 32,
+      "h": 32,
+      "c": 3,
+      "sum": 8100
+    },
+    {
+      "name": "valid_bmp.bmp",
+      "w": 24,
+      "h": 16,
+      "c": 3,
+      "sum": 8100
+    },
+    {
+      "name": "valid_gray.jpg",
+      "w": 48,
+      "h": 48,
+      "c": 1
+    }
+  ],
+  "boundary": [
+    {
+      "name": "bound_1x1.jpg",
+      "w": 1,
+      "h": 1,
+      "c": 3
+    },
+    {
+      "name": "bound_8x8.jpg",
+      "w": 8,
+      "h": 8,
+      "c": 3
+    },
+    {
+      "name": "bound_255.jpg",
+      "w": 255,
+      "h": 255,
+      "c": 3
+    }
+  ],
+  "invalid": [
+    {
+      "name": "crash_dht_overrun.jpg",
+      "note": "n=654 (issue 1289 vector)"
+    },
+    {
+      "name": "crash_dht_offbyone.jpg",
+      "note": "n=257 off-by-one"
+    },
+    {
+      "name": "invalid_truncated.jpg"
+    },
+    {
+      "name": "invalid_random.bin"
+    },
+    {
+      "name": "invalid_empty.jpg"
+    },
+    {
+      "name": "invalid_text.txt"
+    }
+  ]
+}
