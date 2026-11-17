@@ -1,0 +1,108 @@
+{
+  "target": "imginfo",
+  "description": "Image metadata inspection using the stb_image library (filename argument input)",
+  "repo": "targets/imginfo/repo",
+  "build": {
+    "command": "make -C {src} imginfo CFLAGS='{cflags}'",
+    "binary": "imginfo",
+    "flags": {
+      "release": "-O2 -pipe -g",
+      "sanitized": "-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -U_FORTIFY_SOURCE"
+    }
+  },
+  "input": {
+    "method": "file"
+  },
+  "tests_dir": "targets/imginfo/tests",
+  "limits": {
+    "timeout_sec": 5,
+    "cpu_sec": 10,
+    "rlimit_as_mb": 512,
+    "rlimit_as_mb_sanitized": 0,
+    "rlimit_fsize_mb": 64,
+    "rlimit_nofile": 64
+  },
+  "tests": {
+    "valid": [
+      {
+        "name": "valid_small.jpg",
+        "expect_exit": 0,
+        "expect_stdout_pattern": "IMG_OK w=64 h=48 c=3 sum=-?\\d+"
+      },
+      {
+        "name": "valid_big.jpg",
+        "expect_exit": 0,
+        "expect_stdout_pattern": "IMG_OK w=1200 h=800 c=3 sum=-?\\d+"
+      },
+      {
+        "name": "valid_png.png",
+        "expect_exit": 0,
+        "expect_stdout": "IMG_OK w=32 h=32 c=3 sum=8100"
+      },
+      {
+        "name": "valid_bmp.bmp",
+        "expect_exit": 0,
+        "expect_stdout": "IMG_OK w=24 h=16 c=3 sum=8100"
+      },
+      {
+        "name": "valid_gray.jpg",
+        "expect_exit": 0,
+        "expect_stdout_pattern": "IMG_OK w=48 h=48 c=1 sum=-?\\d+"
+      }
+    ],
+    "boundary": [
+      {
+        "name": "bound_1x1.jpg",
+        "expect_exit": 0,
+        "expect_stdout_pattern": "IMG_OK w=1 h=1 c=3 sum=-?\\d+"
+      },
+      {
+        "name": "bound_8x8.jpg",
+        "expect_exit": 0,
+        "expect_stdout_pattern": "IMG_OK w=8 h=8 c=3 sum=-?\\d+"
+      },
+      {
+        "name": "bound_255.jpg",
+        "expect_exit": 0,
+        "expect_stdout_pattern": "IMG_OK w=255 h=255 c=3 sum=-?\\d+"
+      }
+    ],
+    "invalid": [
+      {
+        "name": "crash_dht_overrun.jpg",
+        "expect_exit": 1,
+        "expect_stdout": "IMG_ERR"
+      },
+      {
+        "name": "crash_dht_offbyone.jpg",
+        "expect_exit": 1,
+        "expect_stdout": "IMG_ERR"
+      },
+      {
+        "name": "invalid_truncated.jpg",
+        "expect_exit": 1,
+        "expect_stdout": "IMG_ERR"
+      },
+      {
+        "name": "invalid_random.bin",
+        "expect_exit": 1,
+        "expect_stdout": "IMG_ERR"
+      },
+      {
+        "name": "invalid_empty.jpg",
+        "expect_exit": 1,
+        "expect_stdout": "IMG_ERR"
+      },
+      {
+        "name": "invalid_text.txt",
+        "expect_exit": 1,
+        "expect_stdout": "IMG_ERR"
+      }
+    ]
+  },
+  "reference": {
+    "oracle": "Pillow (PIL) — independent decoder",
+    "valid": "exit 0, width/height/channels from Pillow; exact checksum for lossless PNG/BMP (sum of first 64 bytes of Pillow's decoded RGB data); JPEG checksum is decoder-specific (IDCT) so only its numeric form is checked",
+    "invalid": "Pillow fails to open/decode the file → documented interface: exit 1 and 'IMG_ERR'"
+  }
+}
