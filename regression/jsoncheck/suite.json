@@ -1,0 +1,53 @@
+{
+  "target": "jsoncheck",
+  "entries": [
+    {
+      "id": "R-59ae7c4b",
+      "added_at": "2026-11-17T18:18:08",
+      "added_run": "20261117-181754-cf79c2",
+      "input": "inputs/R-59ae7c4b.input",
+      "input_size": 5,
+      "original_input": "crash_unterminated_string.json",
+      "variant": "primary",
+      "minimized": true,
+      "expect": {
+        "signature": "HEAP_BUFFER_OVERFLOW/READ@parse_string",
+        "error_type": "HEAP_BUFFER_OVERFLOW",
+        "top_function": "parse_string",
+        "on_base": "CRASH_WITH_SIGNATURE",
+        "on_patched": "NO_SUCH_SIGNATURE"
+      },
+      "provenance": [
+        {
+          "run_id": "20261117-181754-cf79c2",
+          "base_commit": "85806a20e01716da1ae343ce861458c923217dd8"
+        }
+      ],
+      "last_seen_run": "20261117-181945-9de8c4"
+    },
+    {
+      "id": "R-d7f66a9f",
+      "added_at": "2026-11-17T18:18:26",
+      "added_run": "20261117-181809-4c4959",
+      "input": "inputs/R-d7f66a9f.input",
+      "input_size": 2,
+      "original_input": "crash_unterminated_brace.json",
+      "variant": "bypass",
+      "minimized": true,
+      "expect": {
+        "signature": "HEAP_BUFFER_OVERFLOW/READ@parse_string",
+        "error_type": "HEAP_BUFFER_OVERFLOW",
+        "top_function": "parse_string",
+        "on_base": "CRASH_WITH_SIGNATURE",
+        "on_patched": "NO_SUCH_SIGNATURE"
+      },
+      "provenance": [
+        {
+          "run_id": "20261117-181809-4c4959",
+          "base_commit": "85806a20e01716da1ae343ce861458c923217dd8"
+        }
+      ],
+      "last_seen_run": "20261117-181945-9de8c4"
+    }
+  ]
+}
