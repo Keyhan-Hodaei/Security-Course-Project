@@ -1,0 +1,53 @@
+{
+  "target": "imginfo",
+  "entries": [
+    {
+      "id": "R-706d4084",
+      "added_at": "2026-11-17T18:21:04",
+      "added_run": "20261117-182004-2984c6",
+      "input": "inputs/R-706d4084.input",
+      "input_size": 81,
+      "original_input": "crash_dht_offbyone.jpg",
+      "variant": "primary",
+      "minimized": true,
+      "expect": {
+        "signature": "INDEX_OUT_OF_BOUNDS@stbi__build_huffman",
+        "error_type": "INDEX_OUT_OF_BOUNDS",
+        "top_function": "stbi__build_huffman",
+        "on_base": "CRASH_WITH_SIGNATURE",
+        "on_patched": "NO_SUCH_SIGNATURE"
+      },
+      "provenance": [
+        {
+          "run_id": "20261117-182004-2984c6",
+          "base_commit": "d69e8bec8381bc4e6d9629939964e3180ea8c381"
+        }
+      ],
+      "last_seen_run": "20261117-182215-732be4"
+    },
+    {
+      "id": "R-df8681f4",
+      "added_at": "2026-11-17T18:22:14",
+      "added_run": "20261117-182105-2c14f5",
+      "input": "inputs/R-df8681f4.input",
+      "input_size": 92,
+      "original_input": "crash_dht_offbyone.jpg",
+      "variant": "bypass",
+      "minimized": true,
+      "expect": {
+        "signature": "INDEX_OUT_OF_BOUNDS@stbi__build_huffman",
+        "error_type": "INDEX_OUT_OF_BOUNDS",
+        "top_function": "stbi__build_huffman",
+        "on_base": "CRASH_WITH_SIGNATURE",
+        "on_patched": "NO_SUCH_SIGNATURE"
+      },
+      "provenance": [
+        {
+          "run_id": "20261117-182105-2c14f5",
+          "base_commit": "d69e8bec8381bc4e6d9629939964e3180ea8c381"
+        }
+      ],
+      "last_seen_run": "20261117-182105-2c14f5"
+    }
+  ]
+}
