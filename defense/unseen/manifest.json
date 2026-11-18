@@ -1,0 +1,119 @@
+[
+  {
+    "t": "jsoncheck",
+    "name": "u01-alt-correct-fix",
+    "expect": 0,
+    "desc": "Correct fix with an alternative implementation (bounds check using a helper variable)",
+    "base": "main",
+    "built_on": "main",
+    "patch": "jsoncheck/u01-alt-correct-fix.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u02-uaf-in-main",
+    "expect": 10,
+    "desc": "Correct fix plus use-after-free on the error path (printing an input sample after free)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u02-uaf-in-main.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u03-alloc-off-by-one",
+    "expect": 10,
+    "desc": "Correct fix plus an allocation optimization that omits the trailing NUL (heap write overflow for every string)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u03-alloc-off-by-one.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u04-null-deref",
+    "expect": 10,
+    "desc": "Correct fix plus null-pointer dereference on empty input",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u04-null-deref.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u05-output-format",
+    "expect": 20,
+    "desc": "Correct fix plus changed success output (n= → count=), violating the documented interface",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u05-output-format.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u06-hang-on-whitespace",
+    "expect": 20,
+    "desc": "Correct fix plus an infinite loop while skipping leading whitespace (timeout on whitespace-only input)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u06-hang-on-whitespace.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u07-hardening-off",
+    "expect": 0,
+    "desc": "Correct fix plus Makefile changes disabling PIE and NX (hardening warnings expected, code 0)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u07-hardening-off.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u08-ignores-cflags",
+    "expect": 30,
+    "desc": "Makefile ignores external CFLAGS (sanitized build lacks instrumentation → build/configuration error)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u08-ignores-cflags.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u09-memory-leak-only",
+    "expect": 0,
+    "desc": "Correct fix plus a memory leak (cJSON_Delete removed); leaks are out of scope, code 0",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u09-memory-leak-only.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v01-alt-correct-fix",
+    "expect": 0,
+    "desc": "Alternative correct fix: reject DHT tables with more than 256 symbols before building the table",
+    "base": "main",
+    "built_on": "main",
+    "patch": "imginfo/v01-alt-correct-fix.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v02-div-by-zero",
+    "expect": 10,
+    "desc": "Correct fix plus division by zero (averaging over w-1) on a 1×1 image",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "imginfo/v02-div-by-zero.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v03-forced-rgb",
+    "expect": 20,
+    "desc": "Correct fix plus forced RGB (stbi_load(..., 3)); grayscale image reported as c=3",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "imginfo/v03-forced-rgb.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v04-incomplete-threshold300",
+    "expect": 10,
+    "desc": "Incomplete fix with a different threshold (n>300): blocks the first crasher (n=654), misses the second (n=257)",
+    "base": "main",
+    "built_on": "main",
+    "patch": "imginfo/v04-incomplete-threshold300.patch"
+  }
+]
