@@ -1,0 +1,33 @@
+From 5e527dd1bfacaa75d77dbbe31d995f8269c86abe Mon Sep 17 00:00:00 2001
+From: PatchProbe Practice <practice@example.invalid>
+Date: Tue, 17 Nov 2026 18:09:19 +0330
+Subject: [PATCH] =?UTF-8?q?v04-incomplete-threshold300:=20=D9=88=D8=B5?=
+ =?UTF-8?q?=D9=84=D9=87=20=D9=86=D8=A7=D9=82=D8=B5=20=D8=A8=D8=A7=20=D8=A2?=
+ =?UTF-8?q?=D8=B3=D8=AA=D8=A7=D9=86=D9=87=20=D8=AF=DB=8C=DA=AF=D8=B1=20(n>?=
+ =?UTF-8?q?300):=20crasher=20=D8=A7=D9=88=D9=84=20(n=3D654)=20=D8=A8=D8=B3?=
+ =?UTF-8?q?=D8=AA=D9=87=20=D9=85=DB=8C=E2=80=8C=D8=B4=D9=88=D8=AF=D8=8C=20?=
+ =?UTF-8?q?crasher=20=D8=AF=D9=88=D9=85=20(n=3D257)=20=D8=B9=D8=A8=D9=88?=
+ =?UTF-8?q?=D8=B1=20=D9=85=DB=8C=E2=80=8C=DA=A9=D9=86=D8=AF?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ stb_image.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/stb_image.h b/stb_image.h
+index 6321f5e..356968a 100644
+--- a/stb_image.h
++++ b/stb_image.h
+@@ -3104,6 +3104,7 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
+                n += sizes[i];
+             }
+             L -= 17;
++            if (n > 300) return stbi__err("bad DHT header","Corrupt JPEG");
+             if (tc == 0) {
+                if (!stbi__build_huffman(z->huff_dc+th, sizes)) return 0;
+                v = z->huff_dc[th].values;
+-- 
+2.51.0
+
