@@ -1,0 +1,33 @@
+From d4e6da285d607ad497d8111511fb90faa3967a5f Mon Sep 17 00:00:00 2001
+From: PatchProbe Practice <practice@example.invalid>
+Date: Tue, 17 Nov 2026 18:09:19 +0330
+Subject: [PATCH] =?UTF-8?q?v01-alt-correct-fix:=20=D9=88=D8=B5=D9=84=D9=87?=
+ =?UTF-8?q?=20=D8=AF=D8=B1=D8=B3=D8=AA=20=D8=A8=D8=A7=20=D9=BE=DB=8C=D8=A7?=
+ =?UTF-8?q?=D8=AF=D9=87=E2=80=8C=D8=B3=D8=A7=D8=B2=DB=8C=20=D9=85=D8=AA?=
+ =?UTF-8?q?=D9=81=D8=A7=D9=88=D8=AA:=20=D8=B1=D8=AF=20DHT=20=D8=A8=D8=A7?=
+ =?UTF-8?q?=20=D8=A8=DB=8C=D8=B4=20=D8=A7=D8=B2=20=DB=B2=DB=B5=DB=B6=20?=
+ =?UTF-8?q?=D9=86=D9=85=D8=A7=D8=AF=20=D9=BE=DB=8C=D8=B4=20=D8=A7=D8=B2=20?=
+ =?UTF-8?q?=D8=B3=D8=A7=D8=AE=D8=AA=20=D8=AC=D8=AF=D9=88=D9=84?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ stb_image.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/stb_image.h b/stb_image.h
+index 6321f5e..7577748 100644
+--- a/stb_image.h
++++ b/stb_image.h
+@@ -3104,6 +3104,7 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
+                n += sizes[i];
+             }
+             L -= 17;
++            if (n > 256) return stbi__err("bad DHT header","Corrupt JPEG");
+             if (tc == 0) {
+                if (!stbi__build_huffman(z->huff_dc+th, sizes)) return 0;
+                v = z->huff_dc[th].values;
+-- 
+2.51.0
+
