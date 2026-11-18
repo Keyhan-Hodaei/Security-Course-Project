@@ -1,0 +1,116 @@
+# پایپ‌لاین CI/CD — اعتبارسنجی وصله‌های امنیتی با PatchProbe
+#
+# کد خروج PatchProbe معیار تصمیم پایپ‌لاین است:
+#   0  PASS  | 10 VULN_REMAINS | 20 FUNC_REGRESSION
+#   30 BUILD_OR_CONFIG_ERROR | 40 INCONCLUSIVE
+#
+# - job «release-gate» الگوی استفاده واقعی است: هر کد غیر 0 انتشار را متوقف می‌کند.
+# - jobهای «expect-*» درستی خود ابزار را اثبات می‌کنند: کد خروج باید دقیقاً
+#   برابر کد موردانتظار سناریو باشد (نه فقط «سبز شدن»).
+# GitLab اسکریپت‌ها را با set -e اجرا می‌کند؛ به همین دلیل کد خروج با
+# «|| got=$?» گرفته می‌شود تا قبل از مقایسه، job متوقف نشود.
+
+stages: [unit, gate, validate, suite]
+
+variables:
+  GIT_SUBMODULE_STRATEGY: none
+
+.tooling: &tooling
+  image: debian:12-slim
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends
+      gcc libc6-dev make git python3 python3-pytest binutils ca-certificates > /dev/null
+    - python3 --version && gcc --version | head -1
+    - bash scripts/setup_targets.sh
+
+unit-tests:
+  <<: *tooling
+  stage: unit
+  script:
+    - python3 -m pytest tests/ -q
+
+# ---------- دروازه انتشار: فقط PASS (کد 0) عبور می‌کند ----------
+release-gate:
+  <<: *tooling
+  stage: gate
+  script:
+    - python3 -m patchprobe --config targets/jsoncheck/config.json
+      --base-ref main --patched-ref patch-correct
+      --reports-dir reports/jsoncheck/ci-gate --bundles-dir bundles/jsoncheck/ci-gate
+  artifacts:
+    paths: [reports/, bundles/, regression/]
+    when: always
+
+# ---------- سناریوها: کد خروج باید دقیقاً کد موردانتظار باشد ----------
+.expect: &expect
+  <<: *tooling
+  stage: validate
+  script:
+    - |
+      got=0
+      python3 -m patchprobe --config "targets/$TARGET/config.json" \
+        --base-ref "$BASE_REF" --patched-ref "$PATCHED_REF" \
+        --reports-dir "reports/$TARGET/$CI_JOB_NAME" \
+        --bundles-dir "bundles/$TARGET/$CI_JOB_NAME" || got=$?
+      if [ "$got" -ne "$EXPECT" ]; then
+        echo "✗ کد خروج $got ≠ انتظار $EXPECT"; exit 1
+      fi
+      echo "✓ کد خروج $got مطابق انتظار"
+  artifacts:
+    paths: [reports/, bundles/, regression/]
+    when: always
+    expire_in: 1 week
+
+expect-jsoncheck-correct:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-correct, EXPECT: "0"}
+expect-jsoncheck-incomplete:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-incomplete, EXPECT: "10"}
+expect-jsoncheck-regression:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-jsoncheck-newissue:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-newissue, EXPECT: "10"}
+expect-jsoncheck-mixed-priority:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-mixed, EXPECT: "10"}
+expect-jsoncheck-fixedbase-regression:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: patch-correct, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-jsoncheck-nonrepro:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: patch-regression, PATCHED_REF: patch-correct, EXPECT: "40"}
+expect-jsoncheck-buildbroken:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: build-broken, EXPECT: "30"}
+expect-imginfo-correct:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: patch-correct, EXPECT: "0"}
+expect-imginfo-incomplete:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: patch-incomplete, EXPECT: "10"}
+expect-imginfo-regression:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-imginfo-fixedbase-regression:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: patch-correct, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-imginfo-nonrepro:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: patch-regression, PATCHED_REF: patch-correct, EXPECT: "40"}
+expect-imginfo-buildbroken:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: build-broken, EXPECT: "30"}
+
+# ---------- ماتریس کامل + بایگانی گزارش‌ها ----------
+full-matrix:
+  <<: *tooling
+  stage: suite
+  script:
+    - bash scenarios/run_all.sh
+  artifacts:
+    paths: [reports/, regression/, bundles/]
+    when: always
+    expire_in: 1 week
