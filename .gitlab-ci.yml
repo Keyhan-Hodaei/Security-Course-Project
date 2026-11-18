@@ -1,0 +1,116 @@
+# CI/CD pipeline — security patch validation with PatchProbe
+#
+# The PatchProbe exit code determines the pipeline decision:
+#   0  PASS  | 10 VULN_REMAINS | 20 FUNC_REGRESSION
+#   30 BUILD_OR_CONFIG_ERROR | 40 INCONCLUSIVE
+#
+# - The release-gate job models deployment: any nonzero code blocks release.
+# - The expect-* jobs test the evaluator: the exit code must exactly
+#   match the scenario's expected code, rather than simply succeed.
+# GitLab runs scripts with set -e, so the exit code is captured with
+# || got=$? to prevent the job from stopping before comparison.
+
+stages: [unit, gate, validate, suite]
+
+variables:
+  GIT_SUBMODULE_STRATEGY: none
+
+.tooling: &tooling
+  image: debian:12-slim
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends
+      gcc libc6-dev make git python3 python3-pytest binutils ca-certificates > /dev/null
+    - python3 --version && gcc --version | head -1
+    - bash scripts/setup_targets.sh
+
+unit-tests:
+  <<: *tooling
+  stage: unit
+  script:
+    - python3 -m pytest tests/ -q
+
+# ---------- Release gate: only PASS (code 0) is accepted ----------
+release-gate:
+  <<: *tooling
+  stage: gate
+  script:
+    - python3 -m patchprobe --config targets/jsoncheck/config.json
+      --base-ref main --patched-ref patch-correct
+      --reports-dir reports/jsoncheck/ci-gate --bundles-dir bundles/jsoncheck/ci-gate
+  artifacts:
+    paths: [reports/, bundles/, regression/]
+    when: always
+
+# ---------- Scenarios: exit codes must match expected values ----------
+.expect: &expect
+  <<: *tooling
+  stage: validate
+  script:
+    - |
+      got=0
+      python3 -m patchprobe --config "targets/$TARGET/config.json" \
+        --base-ref "$BASE_REF" --patched-ref "$PATCHED_REF" \
+        --reports-dir "reports/$TARGET/$CI_JOB_NAME" \
+        --bundles-dir "bundles/$TARGET/$CI_JOB_NAME" || got=$?
+      if [ "$got" -ne "$EXPECT" ]; then
+        echo "✗ Exit code $got ≠ expected $EXPECT"; exit 1
+      fi
+      echo "✓ Exit code $got matches the expected value"
+  artifacts:
+    paths: [reports/, bundles/, regression/]
+    when: always
+    expire_in: 1 week
+
+expect-jsoncheck-correct:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-correct, EXPECT: "0"}
+expect-jsoncheck-incomplete:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-incomplete, EXPECT: "10"}
+expect-jsoncheck-regression:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-jsoncheck-newissue:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-newissue, EXPECT: "10"}
+expect-jsoncheck-mixed-priority:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: patch-mixed, EXPECT: "10"}
+expect-jsoncheck-fixedbase-regression:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: patch-correct, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-jsoncheck-nonrepro:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: patch-regression, PATCHED_REF: patch-correct, EXPECT: "40"}
+expect-jsoncheck-buildbroken:
+  <<: *expect
+  variables: {TARGET: jsoncheck, BASE_REF: main, PATCHED_REF: build-broken, EXPECT: "30"}
+expect-imginfo-correct:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: patch-correct, EXPECT: "0"}
+expect-imginfo-incomplete:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: patch-incomplete, EXPECT: "10"}
+expect-imginfo-regression:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-imginfo-fixedbase-regression:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: patch-correct, PATCHED_REF: patch-regression, EXPECT: "20"}
+expect-imginfo-nonrepro:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: patch-regression, PATCHED_REF: patch-correct, EXPECT: "40"}
+expect-imginfo-buildbroken:
+  <<: *expect
+  variables: {TARGET: imginfo, BASE_REF: main, PATCHED_REF: build-broken, EXPECT: "30"}
+
+# ---------- Full matrix and report archiving ----------
+full-matrix:
+  <<: *tooling
+  stage: suite
+  script:
+    - bash scenarios/run_all.sh
+  artifacts:
+    paths: [reports/, regression/, bundles/]
+    when: always
+    expire_in: 1 week
