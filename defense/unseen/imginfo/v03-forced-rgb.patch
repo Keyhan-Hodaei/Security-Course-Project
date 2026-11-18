@@ -1,0 +1,94 @@
+From def62bfb0c6a6165c91c305e48aba26e2ebea934 Mon Sep 17 00:00:00 2001
+From: PatchProbe Project <patchprobe@example.invalid>
+Date: Sun, 15 Nov 2026 18:15:48 +0000
+Subject: [PATCH 1/2] =?UTF-8?q?stb=5Fimage:=20=D8=A7=D8=B9=D9=85=D8=A7?=
+ =?UTF-8?q?=D9=84=20=D9=88=D8=B5=D9=84=D9=87=20=D9=88=D8=A7=D9=82=D8=B9?=
+ =?UTF-8?q?=DB=8C=20=D8=A8=D8=A7=D9=84=D8=A7=D8=AF=D8=B3=D8=AA=DB=8C=2096f?=
+ =?UTF-8?q?e76c=20(DHT=20range=20checks)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+سه گارد واقعی کامیت بالادستی: کنترل k>=257 در stbi__build_huffman،
+کنترل بازه c در stbi__jpeg_huff_decode و کنترل n>256 در DHT.
+منبع: کامیت 96fe76c مخزن nothings/stb با عنوان "Add range checks to fix
+a few crash issues in stb_image issues 1289 and 1291".
+---
+ stb_image.h | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/stb_image.h b/stb_image.h
+index 6321f5e..800c83d 100644
+--- a/stb_image.h
++++ b/stb_image.h
+@@ -1985,9 +1985,12 @@ static int stbi__build_huffman(stbi__huffman *h, int *count)
+    int i,j,k=0;
+    unsigned int code;
+    // build size list for each symbol (from JPEG spec)
+-   for (i=0; i < 16; ++i)
+-      for (j=0; j < count[i]; ++j)
++   for (i=0; i < 16; ++i) {
++      for (j=0; j < count[i]; ++j) {
+          h->size[k++] = (stbi_uc) (i+1);
++         if(k >= 257) return stbi__err("bad size list","Corrupt JPEG");
++      }
++   }
+    h->size[k] = 0;
+ 
+    // compute actual symbols (from jpeg spec)
+@@ -2112,6 +2115,8 @@ stbi_inline static int stbi__jpeg_huff_decode(stbi__jpeg *j, stbi__huffman *h)
+ 
+    // convert the huffman code to the symbol id
+    c = ((j->code_buffer >> (32 - k)) & stbi__bmask[k]) + h->delta[k];
++   if(c < 0 || c >= 256) // symbol id out of bounds!
++       return -1;
+    STBI_ASSERT((((j->code_buffer) >> (32 - h->size[c])) & stbi__bmask[h->size[c]]) == h->code[c]);
+ 
+    // convert the id to a symbol
+@@ -3103,6 +3108,7 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
+                sizes[i] = stbi__get8(z->s);
+                n += sizes[i];
+             }
++            if(n > 256) return stbi__err("bad DHT header","Corrupt JPEG"); // Loop over i < n would write past end of values!
+             L -= 17;
+             if (tc == 0) {
+                if (!stbi__build_huffman(z->huff_dc+th, sizes)) return 0;
+-- 
+2.51.0
+
+
+From 492d39984c01b5ac22ef6235cb302965f48a2b0c Mon Sep 17 00:00:00 2001
+From: PatchProbe Practice <practice@example.invalid>
+Date: Tue, 17 Nov 2026 18:09:19 +0330
+Subject: [PATCH 2/2] =?UTF-8?q?v03-forced-rgb:=20=D9=88=D8=B5=D9=84=D9=87?=
+ =?UTF-8?q?=20=D8=AF=D8=B1=D8=B3=D8=AA=20+=20=D8=A7=D8=AC=D8=A8=D8=A7?=
+ =?UTF-8?q?=D8=B1=20=DB=B3=20=DA=A9=D8=A7=D9=86=D8=A7=D9=84=20(stbi=5Fload?=
+ =?UTF-8?q?(...,=203))=20=E2=80=94=20=D8=AA=D8=B5=D9=88=DB=8C=D8=B1=20?=
+ =?UTF-8?q?=D8=AE=D8=A7=DA=A9=D8=B3=D8=AA=D8=B1=DB=8C=20c=3D3=20=DA=AF?=
+ =?UTF-8?q?=D8=B2=D8=A7=D8=B1=D8=B4=20=D9=85=DB=8C=E2=80=8C=D8=B4=D9=88?=
+ =?UTF-8?q?=D8=AF?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ imginfo.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/imginfo.c b/imginfo.c
+index f15d224..1fc20e6 100644
+--- a/imginfo.c
++++ b/imginfo.c
+@@ -26,7 +26,8 @@ int main(int argc, char **argv)
+         return 2;
+     }
+ 
+-    data = stbi_load(argv[1], &w, &h, &comp, 0);
++    data = stbi_load(argv[1], &w, &h, &comp, 3);
++    comp = 3;
+     if (data == NULL) {
+         printf("IMG_ERR\n");
+         return 1;
+-- 
+2.51.0
+

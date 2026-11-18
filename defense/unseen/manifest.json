@@ -1,0 +1,119 @@
+[
+  {
+    "t": "jsoncheck",
+    "name": "u01-alt-correct-fix",
+    "expect": 0,
+    "desc": "وصله درست با پیاده‌سازی متفاوت از بالادستی (بررسی محدوده با متغیر کمکی)",
+    "base": "main",
+    "built_on": "main",
+    "patch": "jsoncheck/u01-alt-correct-fix.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u02-uaf-in-main",
+    "expect": 10,
+    "desc": "وصله درست + use-after-free در مسیر خطا (چاپ نمونه ورودی پس از free)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u02-uaf-in-main.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u03-alloc-off-by-one",
+    "expect": 10,
+    "desc": "وصله درست + «بهینه‌سازی» تخصیص که جای NUL پایانی را حذف می‌کند (سرریز نوشتن heap روی هر رشته)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u03-alloc-off-by-one.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u04-null-deref",
+    "expect": 10,
+    "desc": "وصله درست + ارجاع اشاره‌گر تهی برای ورودی خالی",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u04-null-deref.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u05-output-format",
+    "expect": 20,
+    "desc": "وصله درست + تغییر قالب خروجی موفق (n= → count=) — نقض رابط مستند",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u05-output-format.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u06-hang-on-whitespace",
+    "expect": 20,
+    "desc": "وصله درست + حلقه بی‌پایان در حذف فاصله‌های ابتدایی (timeout روی ورودی فقط-فاصله)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u06-hang-on-whitespace.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u07-hardening-off",
+    "expect": 0,
+    "desc": "وصله درست + تغییر Makefile که PIE و NX را خاموش می‌کند (باید هشدار سخت‌سازی بدهد، کد 0)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u07-hardening-off.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u08-ignores-cflags",
+    "expect": 30,
+    "desc": "Makefile که CFLAGS بیرونی را نادیده می‌گیرد (بیلد sanitized ابزارگذاری نمی‌شود → خطای ساخت/پیکربندی)",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u08-ignores-cflags.patch"
+  },
+  {
+    "t": "jsoncheck",
+    "name": "u09-memory-leak-only",
+    "expect": 0,
+    "desc": "وصله درست + نشتی حافظه (cJSON_Delete حذف شده) — نشتی خارج از دامنه، کد 0",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "jsoncheck/u09-memory-leak-only.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v01-alt-correct-fix",
+    "expect": 0,
+    "desc": "وصله درست با پیاده‌سازی متفاوت: رد DHT با بیش از ۲۵۶ نماد پیش از ساخت جدول",
+    "base": "main",
+    "built_on": "main",
+    "patch": "imginfo/v01-alt-correct-fix.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v02-div-by-zero",
+    "expect": 10,
+    "desc": "وصله درست + تقسیم بر صفر (میانگین روی w-1) برای تصویر ۱×۱",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "imginfo/v02-div-by-zero.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v03-forced-rgb",
+    "expect": 20,
+    "desc": "وصله درست + اجبار ۳ کانال (stbi_load(..., 3)) — تصویر خاکستری c=3 گزارش می‌شود",
+    "base": "main",
+    "built_on": "patch-correct",
+    "patch": "imginfo/v03-forced-rgb.patch"
+  },
+  {
+    "t": "imginfo",
+    "name": "v04-incomplete-threshold300",
+    "expect": 10,
+    "desc": "وصله ناقص با آستانه دیگر (n>300): crasher اول (n=654) بسته می‌شود، crasher دوم (n=257) عبور می‌کند",
+    "base": "main",
+    "built_on": "main",
+    "patch": "imginfo/v04-incomplete-threshold300.patch"
+  }
+]

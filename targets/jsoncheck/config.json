@@ -1,0 +1,122 @@
+{
+  "target": "jsoncheck",
+  "description": "اعتبارسنج JSON مبتنی بر کتابخانه واقعی cJSON (ورودی از stdin)",
+  "repo": "targets/jsoncheck/repo",
+  "build": {
+    "command": "make -C {src} jsoncheck CFLAGS='{cflags}'",
+    "binary": "jsoncheck",
+    "flags": {
+      "release": "-O2 -pipe -g",
+      "sanitized": "-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -U_FORTIFY_SOURCE"
+    }
+  },
+  "input": {
+    "method": "stdin"
+  },
+  "tests_dir": "targets/jsoncheck/tests",
+  "limits": {
+    "timeout_sec": 5,
+    "cpu_sec": 10,
+    "rlimit_as_mb": 512,
+    "rlimit_as_mb_sanitized": 0,
+    "rlimit_fsize_mb": 64,
+    "rlimit_nofile": 64
+  },
+  "tests": {
+    "valid": [
+      {
+        "name": "valid_basic.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=object n=4"
+      },
+      {
+        "name": "valid_long_string.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=array n=1"
+      },
+      {
+        "name": "valid_numbers.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=array n=5"
+      },
+      {
+        "name": "valid_nested.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=object n=1"
+      },
+      {
+        "name": "valid_unicode.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=object n=2"
+      },
+      {
+        "name": "valid_100.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=array n=100"
+      }
+    ],
+    "boundary": [
+      {
+        "name": "bound_256str.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=array n=1"
+      },
+      {
+        "name": "bound_escapes.json",
+        "expect_exit": 0,
+        "expect_stdout": "PARSE_OK type=object n=1"
+      },
+      {
+        "name": "bound_empty.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "bound_ws.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "bound_obj_only.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "bound_quote_end.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "invalid_number.json",
+        "expect_exit": 1
+      }
+    ],
+    "invalid": [
+      {
+        "name": "crash_unterminated_string.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "crash_unterminated_brace.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "invalid_long_garbage.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "invalid_double_comma.json",
+        "expect_exit": 1
+      },
+      {
+        "name": "invalid_text.txt",
+        "expect_exit": 1
+      },
+      {
+        "name": "invalid_random.bin",
+        "expect_exit": 1
+      }
+    ]
+  },
+  "reference": {
+    "oracle": "python3 json module (json.loads) — independent of the target",
+    "valid": "exit 0 and exact summary 'PARSE_OK type=<t> n=<len>' computed by targets/jsoncheck/tests/gen_tests.py from the parsed document",
+    "invalid": "json.loads rejects the input → documented interface: exit 1 (rejection); message text is not part of the criterion"
+  }
+}
