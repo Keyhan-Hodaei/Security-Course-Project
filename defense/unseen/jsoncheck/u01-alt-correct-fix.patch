@@ -1,0 +1,44 @@
+From 26a7653a83d70c867171aca5da55735eedc1659f Mon Sep 17 00:00:00 2001
+From: PatchProbe Practice <practice@example.invalid>
+Date: Tue, 17 Nov 2026 18:09:18 +0330
+Subject: [PATCH] =?UTF-8?q?u01-alt-correct-fix:=20=D9=88=D8=B5=D9=84=D9=87?=
+ =?UTF-8?q?=20=D8=AF=D8=B1=D8=B3=D8=AA=20=D8=A8=D8=A7=20=D9=BE=DB=8C=D8=A7?=
+ =?UTF-8?q?=D8=AF=D9=87=E2=80=8C=D8=B3=D8=A7=D8=B2=DB=8C=20=D9=85=D8=AA?=
+ =?UTF-8?q?=D9=81=D8=A7=D9=88=D8=AA=20=D8=A7=D8=B2=20=D8=A8=D8=A7=D9=84?=
+ =?UTF-8?q?=D8=A7=D8=AF=D8=B3=D8=AA=DB=8C=20(=D8=A8=D8=B1=D8=B1=D8=B3?=
+ =?UTF-8?q?=DB=8C=20=D9=85=D8=AD=D8=AF=D9=88=D8=AF=D9=87=20=D8=A8=D8=A7=20?=
+ =?UTF-8?q?=D9=85=D8=AA=D8=BA=DB=8C=D8=B1=20=DA=A9=D9=85=DA=A9=DB=8C)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ cJSON.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/cJSON.c b/cJSON.c
+index b9ae041..f7cc161 100644
+--- a/cJSON.c
++++ b/cJSON.c
+@@ -657,7 +657,8 @@ static cJSON_bool parse_string(cJSON * const item, parse_buffer * const input_bu
+         /* calculate approximate size of the output (overestimate) */
+         size_t allocation_length = 0;
+         size_t skipped_bytes = 0;
+-        while ((*input_end != '\"') && ((size_t)(input_end - input_buffer->content) < input_buffer->length))
++        const unsigned char *const buffer_end = input_buffer->content + input_buffer->length;
++        while ((input_end < buffer_end) && (*input_end != '\"'))
+         {
+             /* is escape sequence */
+             if (input_end[0] == '\\')
+@@ -672,7 +673,7 @@ static cJSON_bool parse_string(cJSON * const item, parse_buffer * const input_bu
+             }
+             input_end++;
+         }
+-        if (*input_end != '\"')
++        if ((input_end >= buffer_end) || (*input_end != '\"'))
+         {
+             goto fail; /* string ended unexpectedly */
+         }
+-- 
+2.51.0
+

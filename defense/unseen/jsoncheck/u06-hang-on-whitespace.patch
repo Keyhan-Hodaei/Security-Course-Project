@@ -1,0 +1,81 @@
+From 87dae053b89d7aca1886e34cf6a70c5b6a044aee Mon Sep 17 00:00:00 2001
+From: PatchProbe Project <patchprobe@example.invalid>
+Date: Sun, 15 Nov 2026 18:09:13 +0000
+Subject: [PATCH 1/2] =?UTF-8?q?cJSON:=20=D8=A7=D8=B9=D9=85=D8=A7=D9=84=20?=
+ =?UTF-8?q?=D9=88=D8=B5=D9=84=D9=87=20=D9=88=D8=A7=D9=82=D8=B9=DB=8C=20?=
+ =?UTF-8?q?=D8=A8=D8=A7=D9=84=D8=A7=D8=AF=D8=B3=D8=AA=DB=8C=20a167d9e=20(p?=
+ =?UTF-8?q?arse=5Fstring=20bounds)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+برنامه‌ریزی شرط حلقه: بررسی محدوده پیش از dereference + گارد محدوده در
+بررسی پایانی. منبع: کامیت a167d9e مخزن بالادستی DaveGamble/cJSON با عنوان
+"Fix reading buffer overflow in parse_string".
+---
+ cJSON.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cJSON.c b/cJSON.c
+index b9ae041..ee5ffe4 100644
+--- a/cJSON.c
++++ b/cJSON.c
+@@ -657,7 +657,7 @@ static cJSON_bool parse_string(cJSON * const item, parse_buffer * const input_bu
+         /* calculate approximate size of the output (overestimate) */
+         size_t allocation_length = 0;
+         size_t skipped_bytes = 0;
+-        while ((*input_end != '\"') && ((size_t)(input_end - input_buffer->content) < input_buffer->length))
++        while (((size_t)(input_end - input_buffer->content) < input_buffer->length) && (*input_end != '\"'))
+         {
+             /* is escape sequence */
+             if (input_end[0] == '\\')
+@@ -672,7 +672,7 @@ static cJSON_bool parse_string(cJSON * const item, parse_buffer * const input_bu
+             }
+             input_end++;
+         }
+-        if (*input_end != '\"')
++        if (((size_t)(input_end - input_buffer->content) >= input_buffer->length) || (*input_end != '\"'))
+         {
+             goto fail; /* string ended unexpectedly */
+         }
+-- 
+2.51.0
+
+
+From 7b66ea3191972db948c003febbc55e5b25c5a9f1 Mon Sep 17 00:00:00 2001
+From: PatchProbe Practice <practice@example.invalid>
+Date: Tue, 17 Nov 2026 18:09:18 +0330
+Subject: [PATCH 2/2] =?UTF-8?q?u06-hang-on-whitespace:=20=D9=88=D8=B5?=
+ =?UTF-8?q?=D9=84=D9=87=20=D8=AF=D8=B1=D8=B3=D8=AA=20+=20=D8=AD=D9=84?=
+ =?UTF-8?q?=D9=82=D9=87=20=D8=A8=DB=8C=E2=80=8C=D9=BE=D8=A7=DB=8C=D8=A7?=
+ =?UTF-8?q?=D9=86=20=D8=AF=D8=B1=20=D8=AD=D8=B0=D9=81=20=D9=81=D8=A7=D8=B5?=
+ =?UTF-8?q?=D9=84=D9=87=E2=80=8C=D9=87=D8=A7=DB=8C=20=D8=A7=D8=A8=D8=AA?=
+ =?UTF-8?q?=D8=AF=D8=A7=DB=8C=DB=8C=20(timeout=20=D8=B1=D9=88=DB=8C=20?=
+ =?UTF-8?q?=D9=88=D8=B1=D9=88=D8=AF=DB=8C=20=D9=81=D9=82=D8=B7-=D9=81?=
+ =?UTF-8?q?=D8=A7=D8=B5=D9=84=D9=87)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ jsoncheck.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/jsoncheck.c b/jsoncheck.c
+index 847bb1e..0f1e676 100644
+--- a/jsoncheck.c
++++ b/jsoncheck.c
+@@ -109,6 +109,10 @@ int main(int argc, char **argv)
+         return 1;
+     }
+ 
++    {   /* حذف فاصله‌های ابتدایی (باگ: اندیس هرگز جلو نمی‌رود) */
++        size_t k = 0;
++        while (k < len && (buf[k] == ' ' || buf[k] == '\n' || buf[k] == '\t')) { if (k + 1 == len) continue; k++; }
++    }
+     root = cJSON_Parse(buf);
+     if (root == NULL) {
+         printf("PARSE_ERR\n");
+-- 
+2.51.0
+
