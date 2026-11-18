@@ -1,0 +1,22 @@
+services:
+  validate:
+    build: .
+    image: patchprobe:latest
+    # محدودیت منابع کانتینر — ایزولاسیون سطح هسته برای اجراهای برنامه هدف
+    mem_limit: 2g
+    cpus: 2.0
+    pids_limit: 256
+    read_only: false
+    # فایل‌سیستم موقتی کوچک برای جلوگیری از انفجار دیسک در ورودی‌های خراب
+    tmpfs:
+      - /tmp:size=1g,mode=1777,exec
+    cap_drop: [ALL]
+    # توجه: Docker نصب‌شده با snap (Ubuntu) این گزینه را با AppArmor خود ناسازگار
+    # می‌داند («exec ...: operation not permitted»)؛ در آن صورت فقط همین دو خط را
+    # حذف کنید. روی Docker Engine استاندارد بدون مشکل کار می‌کند.
+    security_opt:
+      - no-new-privileges:true
+    # شبکه را کاملاً قطع می‌کنیم؛ برنامه هدف نباید به شبکه دسترسی داشته باشد
+    network_mode: none
+    working_dir: /workspace
+    command: bash -c "python3 -m pytest tests/ -q && bash scenarios/run_all.sh"
